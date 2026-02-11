@@ -35,16 +35,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --ignore-scripts
 
-      - name: OIDC Diagnostic
-        run: |
-          echo "NPM Version: $(npm --version)"
-          if [ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
-            echo "✅ GitHub OIDC Token URL is present."
-          else
-            echo "❌ GitHub OIDC Token URL is MISSING. Check repository permissions."
-          fi
-          npm config list
-
       - name: Build
         run: pnpm build
 

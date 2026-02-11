@@ -5,9 +5,9 @@
 [![NPM Version](https://img.shields.io/npm/v/@ismail-kattakath/mediapipe-react.svg?style=flat-square)](https://www.npmjs.com/package/@ismail-kattakath/mediapipe-react)
 [![License](https://img.shields.io/npm/l/@ismail-kattakath/mediapipe-react.svg?style=flat-square)](https://github.com/ismail-kattakath/mediapipe-react/blob/main/LICENSE)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/ismail-kattakath/mediapipe-react/ci.yml?branch=main&style=flat-square)](https://github.com/ismail-kattakath/mediapipe-react/actions/workflows/ci.yml)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@ismail-kattakath/mediapipe-react?style=flat-square)](https://bundlephobia.com/package/@ismail-kattakath/mediapipe-react)
 
-**The easiest way to integrate MediaPipe into your React and Next.js applications.**
+**Production-ready React hooks for MediaPipe AI tasks — GenAI, Vision, and Audio.**
 
 </div>
 
@@ -15,10 +15,11 @@
 
 ## Features
 
-- 🧊 **React-first API**: Clean, hooks-based interface.
-- 🚀 **Next.js Optimized**: Built-in SSR safety and App Router support.
-- 📦 **Treeshakable Subpaths**: Only bundle what you use (e.g., `genai`).
-- 🛠️ **Fully Typed**: Written in TypeScript for a great developer experience.
+- 🧊 **React-first API**: Clean, hooks-based interface
+- 🚀 **Next.js Optimized**: Built-in SSR safety and App Router support
+- 📦 **Tree-shakable Subpaths**: Only bundle what you use (e.g., `/genai`)
+- 🛠️ **Fully Typed**: Written in TypeScript for excellent DX
+- ⚡ **Web Worker Support**: Heavy inference runs in background threads
 
 ## Installation
 
@@ -26,159 +27,379 @@
 pnpm add @ismail-kattakath/mediapipe-react
 # or
 npm install @ismail-kattakath/mediapipe-react
+# or
+yarn add @ismail-kattakath/mediapipe-react
 ```
 
 > [!NOTE]
-> You may also need to install specific MediaPipe task packages (e.g., `@mediapipe/tasks-genai`) depending on the features you use.
+> You'll also need to install the specific MediaPipe task package for the features you use:
+>
+> ```bash
+> pnpm add @mediapipe/tasks-genai  # For GenAI features
+> ```
 
 ## Quick Start
 
-We support both raw React (Vite/CRA) and Next.js (App Router).
-
-<table width="100%">
-<tr>
-<td width="50%" valign="top">
-
-### ⚡ Vite / Vanilla React
+### Vite / Vanilla React
 
 ```tsx
 // main.tsx
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import { MediaPipeProvider } from "@ismail-kattakath/mediapipe-react";
+import App from "./App";
 
-ReactDOM.createRoot(root).render(
-  <MediaPipeProvider>
-    <App />
-  </MediaPipeProvider>,
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <MediaPipeProvider>
+      <App />
+    </MediaPipeProvider>
+  </StrictMode>,
 );
+```
 
+```tsx
 // App.tsx
 import { useLlm } from "@ismail-kattakath/mediapipe-react/genai";
 
-function App() {
-  const { generate, output } = useLlm({
-    modelPath: "/path/to/model.bin",
+export default function App() {
+  const { generate, output, isLoading } = useLlm({
+    modelPath: "/models/gemma-2b-it-gpu-int4.bin",
   });
-  // ...
+
+  return (
+    <div>
+      <button
+        onClick={() => generate("Explain React hooks")}
+        disabled={isLoading}
+      >
+        Generate
+      </button>
+      <pre>{output}</pre>
+    </div>
+  );
 }
 ```
 
-</td>
-<td width="50%" valign="top">
-
-### 🌑 Next.js (App Router)
+### Next.js (App Router)
 
 ```tsx
-// layout.tsx
+// app/layout.tsx
 import { MediaPipeProvider } from "@ismail-kattakath/mediapipe-react";
 
-export default function Layout({ children }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html>
+    <html lang="en">
       <body>
         <MediaPipeProvider>{children}</MediaPipeProvider>
       </body>
     </html>
   );
 }
-
-// client-component.tsx
-("use client");
-import { useLlm } from "@ismail-kattakath/mediapipe-react/genai";
-// ...
 ```
 
-</td>
-</tr>
-</table>
+```tsx
+// app/components/ChatBox.tsx
+"use client";
 
-## Subpaths
+import { useLlm } from "@ismail-kattakath/mediapipe-react/genai";
 
-This library uses subpaths to keep your bundle small:
+export default function ChatBox() {
+  const { generate, output, isLoading } = useLlm({
+    modelPath: "/models/gemma-2b-it-gpu-int4.bin",
+  });
 
-- `@ismail-kattakath/mediapipe-react`: Core provider and utilities.
-- `@ismail-kattakath/mediapipe-react/genai`: LLM inference and Generative AI features.
+  return (
+    <div>
+      <button onClick={() => generate("Hello!")} disabled={isLoading}>
+        Send
+      </button>
+      <p>{output}</p>
+    </div>
+  );
+}
+```
 
-## Roadmap
+## Subpath Strategy
 
-We are following a phased rollout to cover the full breadth of MediaPipe's capabilities while maintaining a React-idiomatic developer experience.
+This library uses **subpath exports** to keep your bundle size minimal. Import only the features you need:
 
-### Phase 1: Generative AI (Current)
+| Subpath                                    | Purpose                       | Example                                                                        |
+| ------------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------ |
+| `@ismail-kattakath/mediapipe-react`        | Core provider and utilities   | `import { MediaPipeProvider } from "@ismail-kattakath/mediapipe-react"`        |
+| `@ismail-kattakath/mediapipe-react/genai`  | LLM inference and GenAI hooks | `import { useLlm } from "@ismail-kattakath/mediapipe-react/genai"`             |
+| `@ismail-kattakath/mediapipe-react/vision` | Vision tasks (planned)        | `import { useHandTracking } from "@ismail-kattakath/mediapipe-react/vision"`   |
+| `@ismail-kattakath/mediapipe-react/audio`  | Audio tasks (planned)         | `import { useAudioClassifier } from "@ismail-kattakath/mediapipe-react/audio"` |
 
-- [x] **LLM Inference**: Support for Gemma and Llama models.
-- [x] **Web Worker Orchestration**: Offload heavy inference to background threads.
-- [x] **Streaming Hooks**: Real-time token streaming for chat interfaces.
-- **Hooks**: `useLlm`, `useLlmChat`
+> [!TIP]
+> Using subpaths ensures that importing `/genai` won't bundle vision or audio code, reducing your final bundle size.
 
-### Phase 2: Vision Core (Next)
+## API Reference
 
-- [ ] **Hand Tracking**: 2D and 3D hand landmark detection.
-- [ ] **Face Mesh**: High-fidelity face landmark detection.
-- [ ] **Object Detection**: Identifying and locating multiple objects in images/video.
-- **Hooks**: `useHandTracking`, `useFaceMesh`, `useObjectDetection`
+### Core
 
-### Phase 3: Advanced Perception
+#### `MediaPipeProvider`
 
-- [ ] **Holistic Tracking**: Simultaneous tracking of body, hands, and face.
-- [ ] **Selfie Segmentation**: Real-time background removal/blurring.
-- [ ] **Pose Tracking**: 3D body pose estimation.
-- **Hooks**: `useHolistic`, `useSelfieSegmentation`, `usePoseTracking`
+The root provider that supplies configuration to all MediaPipe hooks.
 
-### Phase 4: Audio & Customization
+**Props:**
 
-- [ ] **Audio Classification**: Identify sounds from a predefined set of categories.
-- [ ] **Custom Model Assets**: Support for uploading and using custom `.tflite` or GenAI model files.
-- **Hooks**: `useAudioClassifier`, `useCustomModel`
+| Prop        | Type                | Default     | Description                         |
+| ----------- | ------------------- | ----------- | ----------------------------------- |
+| `wasmPath`  | `string` (optional) | `undefined` | Custom path to MediaPipe WASM files |
+| `modelPath` | `string` (optional) | `undefined` | Default model path for all hooks    |
+| `children`  | `ReactNode`         | —           | Your app components                 |
 
-## 🤝 Call for Contributors
+**Example:**
 
-We are looking for help! Specifically, we want to expand the **Vision** capabilities.
+```tsx
+<MediaPipeProvider wasmPath="/wasm" modelPath="/models/default.bin">
+  <App />
+</MediaPipeProvider>
+```
 
-If you are interested in implementing the `vision.ts` subpath using our established Web Worker pattern (see [genai.ts](packages/core/src/genai.ts) for reference), please check out our [CONTRIBUTING.md](CONTRIBUTING.md).
+#### `useMediaPipeContext`
 
-Help us make MediaPipe the standard for AI in React!
+Access the MediaPipe context from any child component.
+
+**Returns:**
+
+```typescript
+{
+  wasmPath?: string;
+  modelPath?: string;
+}
+```
+
+**Example:**
+
+```tsx
+import { useMediaPipeContext } from "@ismail-kattakath/mediapipe-react";
+
+function MyComponent() {
+  const { modelPath } = useMediaPipeContext();
+  return <div>Model path: {modelPath}</div>;
+}
+```
+
+### GenAI
+
+#### `useLlm`
+
+Hook for LLM inference with Web Worker orchestration.
+
+**Parameters:**
+
+```typescript
+interface UseLlmOptions {
+  modelPath: string; // Path to .bin or .task model file
+  maxTokens?: number; // Max tokens to generate (default: 512)
+  temperature?: number; // Sampling temperature (default: 0.8)
+  topK?: number; // Top-K sampling (default: 40)
+  randomSeed?: number; // Random seed for reproducibility
+}
+```
+
+**Returns:**
+
+```typescript
+{
+  generate: (prompt: string) => void;
+  output: string;              // Generated text
+  isLoading: boolean;          // Whether inference is running
+  progress: number;            // Progress percentage (0-100)
+  error: string | null;        // Error message if any
+}
+```
+
+**Example:**
+
+```tsx
+import { useLlm } from "@ismail-kattakath/mediapipe-react/genai";
+
+function ChatInterface() {
+  const { generate, output, isLoading, error } = useLlm({
+    modelPath: "/models/gemma-2b-it-gpu-int4.bin",
+    maxTokens: 1024,
+    temperature: 0.7,
+  });
+
+  const handleSubmit = (prompt: string) => {
+    generate(prompt);
+  };
+
+  if (error) return <div>Error: {error}</div>;
+
+  return (
+    <div>
+      <textarea onChange={(e) => handleSubmit(e.target.value)} />
+      {isLoading && <p>Generating...</p>}
+      <pre>{output}</pre>
+    </div>
+  );
+}
+```
+
+## Next.js / SSR Compatibility
+
+This library is **fully compatible** with Next.js App Router and Server-Side Rendering.
+
+### How It Works
+
+All hooks include an `isBrowser()` guard that prevents MediaPipe initialization during server-side rendering:
+
+```typescript
+// Internal implementation
+function isBrowser(): boolean {
+  return typeof window !== "undefined";
+}
+```
+
+This means:
+
+- ✅ No "window is not defined" errors
+- ✅ No hydration mismatches
+- ✅ Works with React Server Components (when used in Client Components)
+
+### Best Practices
+
+1. **Always use `"use client"` directive** when using MediaPipe hooks:
+
+```tsx
+"use client";
+
+import { useLlm } from "@ismail-kattakath/mediapipe-react/genai";
+
+export default function MyComponent() {
+  // Your code here
+}
+```
+
+2. **Wrap your app with `MediaPipeProvider` in a Client Component**:
+
+```tsx
+// app/providers.tsx
+"use client";
+
+import { MediaPipeProvider } from "@ismail-kattakath/mediapipe-react";
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <MediaPipeProvider>{children}</MediaPipeProvider>;
+}
+```
+
+```tsx
+// app/layout.tsx
+import { Providers } from "./providers";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+3. **Serve model files from the `public/` directory**:
+
+```
+public/
+└── models/
+    ├── gemma-2b-it-gpu-int4.bin
+    └── llama-3-8b.task
+```
+
+Then reference them with absolute paths:
+
+```tsx
+const { generate } = useLlm({
+  modelPath: "/models/gemma-2b-it-gpu-int4.bin",
+});
+```
+
+## Advanced Usage
+
+### Custom WASM Path
+
+If you're hosting MediaPipe WASM files on a CDN:
+
+```tsx
+<MediaPipeProvider wasmPath="https://cdn.example.com/mediapipe/wasm">
+  <App />
+</MediaPipeProvider>
+```
+
+### Error Handling
+
+```tsx
+const { generate, error } = useLlm({ modelPath: "/models/model.bin" });
+
+useEffect(() => {
+  if (error) {
+    console.error("LLM Error:", error);
+    // Show user-friendly error message
+  }
+}, [error]);
+```
+
+### Progress Tracking
+
+```tsx
+const { generate, progress, isLoading } = useLlm({
+  modelPath: "/models/model.bin",
+});
+
+return <div>{isLoading && <progress value={progress} max={100} />}</div>;
+```
+
+## Troubleshooting
+
+### "Failed to load model"
+
+- Ensure the model file exists at the specified path
+- Check that the file is served with correct MIME type
+- Verify the model format is compatible (`.bin` or `.task`)
+
+### "Worker initialization failed"
+
+- Ensure your bundler supports Web Workers
+- For Vite, no additional config needed
+- For Next.js, ensure you're using Next.js 13+ with App Router
+
+### Bundle size is too large
+
+- Use subpath imports: `@ismail-kattakath/mediapipe-react/genai` instead of the root import
+- Ensure tree-shaking is enabled in your bundler
+- Check that you're not importing unused subpaths
+
+## TypeScript Support
+
+This library is written in TypeScript and includes full type definitions. No additional `@types` packages needed.
+
+```tsx
+import type { UseLlmOptions } from "@ismail-kattakath/mediapipe-react/genai";
+
+const config: UseLlmOptions = {
+  modelPath: "/models/model.bin",
+  maxTokens: 512,
+};
+```
 
 ## Contributing
 
-Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get involved.
-
-## Social Sharing
-
-When sharing the repository on social media, you can use the following meta tags to ensure a great preview. Add these to your site's `<head>`:
-
-```html
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content="website" />
-<meta
-  property="og:url"
-  content="https://github.com/ismail-kattakath/mediapipe-react"
-/>
-<meta property="og:title" content="@ismail-kattakath/mediapipe-react" />
-<meta
-  property="og:description"
-  content="The easiest way to integrate MediaPipe into your React and Next.js applications."
-/>
-<meta
-  property="og:image"
-  content="https://opengraph.githubassets.com/1/ismail-kattakath/mediapipe-react"
-/>
-
-<!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image" />
-<meta
-  property="twitter:url"
-  content="https://github.com/ismail-kattakath/mediapipe-react"
-/>
-<meta property="twitter:title" content="@ismail-kattakath/mediapipe-react" />
-<meta
-  property="twitter:description"
-  content="The easiest way to integrate MediaPipe into your React and Next.js applications."
-/>
-<meta
-  property="twitter:image"
-  content="https://opengraph.githubassets.com/1/ismail-kattakath/mediapipe-react"
-/>
-```
+This package is part of a monorepo. For contribution guidelines, see the [main repository README](https://github.com/ismail-kattakath/mediapipe-react#contributing).
 
 ## License
 
-MIT © [Ismail Kattakath](LICENSE)
+MIT © [Ismail Kattakath](https://github.com/ismail-kattakath/mediapipe-react/blob/main/LICENSE)
