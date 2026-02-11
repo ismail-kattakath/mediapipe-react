@@ -1,0 +1,67 @@
+{
+  "name": "@ismail-kattakath/mediapipe-react",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ismail-kattakath/mediapipe-react.git",
+    "directory": "packages/core"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./genai": {
+      "types": "./dist/genai.d.ts",
+      "import": "./dist/genai.mjs",
+      "require": "./dist/genai.js"
+    },
+    "./vision": {
+      "types": "./dist/vision.d.ts",
+      "import": "./dist/vision.mjs",
+      "require": "./dist/vision.js"
+    },
+    "./audio": {
+      "types": "./dist/audio.d.ts",
+      "import": "./dist/audio.mjs",
+      "require": "./dist/audio.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@mediapipe/tasks-genai": "^0.10.0",
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^18.2.79",
+    "@types/react-dom": "^18.2.25",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/ui": "^4.0.18",
+    "jsdom": "^28.0.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5",
+    "vitest": "^4.0.18"
+  }
+}

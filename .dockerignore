@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+.git/
+*.log
+.pnpm-debug.log*
+.turbo/
+.vscode/
+.idea/
+.env*
+*.local
