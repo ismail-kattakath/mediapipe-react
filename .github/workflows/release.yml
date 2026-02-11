@@ -30,6 +30,7 @@ jobs:
         with:
           node-version: 20
           cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org/'
 
       - name: Install dependencies
         run: pnpm install
@@ -39,6 +40,6 @@ jobs:
         uses: changesets/action@v1
         with:
           # This expects you to have a script called 'release' which usually calls 'changeset publish'
-          publish: pnpm release
+          publish: npx changeset publish --provenance
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
