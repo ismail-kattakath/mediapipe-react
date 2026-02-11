@@ -15,7 +15,6 @@ jobs:
       contents: write
       id-token: write
       pull-requests: write
-    environment: npm-release
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v5
@@ -36,11 +35,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --ignore-scripts
 
-      - name: NPM Diagnostics
+      - name: OIDC Diagnostic
         run: |
-          npm --version
+          echo "NPM Version: $(npm --version)"
+          if [ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "✅ GitHub OIDC Token URL is present."
+          else
+            echo "❌ GitHub OIDC Token URL is MISSING. Check repository permissions."
+          fi
           npm config list
-          npm whoami || echo "Not logged in (Expected if OIDC not yet active)"
 
       - name: Build
         run: pnpm build
@@ -53,4 +56,3 @@ jobs:
           publish: npx changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: "" # Workaround. See https://github.com/changesets/changesets/issues/1152#issuecomment-3190884868
