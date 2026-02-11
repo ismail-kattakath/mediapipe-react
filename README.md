@@ -7,177 +7,159 @@
 [![Build Status](https://img.shields.io/github/actions/workflow/status/ismail-kattakath/mediapipe-react/ci.yml?branch=main&style=flat-square)](https://github.com/ismail-kattakath/mediapipe-react/actions/workflows/ci.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://makeapullrequest.com)
 
-**The easiest way to integrate MediaPipe into your React and Next.js applications.**
+**Production-ready React hooks for MediaPipe AI tasks — GenAI, Vision, and Audio.**
 
 </div>
 
 ---
 
-## Features
+## Overview
 
-- 🧊 **React-first API**: Clean, hooks-based interface.
-- 🚀 **Next.js Optimized**: Built-in SSR safety and App Router support.
-- 📦 **Treeshakable Subpaths**: Only bundle what you use (e.g., `genai`).
-- 🛠️ **Fully Typed**: Written in TypeScript for a great developer experience.
+`@ismail-kattakath/mediapipe-react` is a **monorepo** that provides React developers with a clean, hooks-based API for integrating Google's MediaPipe AI capabilities. Built with **Turborepo** and **pnpm workspaces**, this project is designed for scalability, modularity, and developer experience.
+
+### Three Target Areas
+
+1. **GenAI** — LLM inference (Gemma, Llama) with Web Worker orchestration
+2. **Vision** — Hand tracking, face mesh, object detection, pose estimation
+3. **Audio** — Audio classification and custom model support
+
+The library uses **subpath exports** to ensure tree-shaking and minimal bundle sizes. Import only what you need.
+
+## Architecture
+
+This is a **monorepo** managed with:
+
+- **[Turborepo](https://turbo.build/)** — Task orchestration and caching
+- **[pnpm workspaces](https://pnpm.io/workspaces)** — Dependency management
+
+### Project Structure
+
+```
+mediapipe-react/
+├── packages/
+│   └── core/              # @ismail-kattakath/mediapipe-react (published to npm)
+│       ├── src/
+│       │   ├── index.ts   # Core provider and utilities
+│       │   ├── genai.ts   # GenAI subpath (useLlm, etc.)
+│       │   ├── vision.ts  # Vision subpath (planned)
+│       │   └── audio.ts   # Audio subpath (planned)
+│       └── package.json
+├── apps/
+│   ├── playground-next/   # Next.js App Router playground
+│   └── playground-vite/   # Vite + React playground
+├── turbo.json             # Turborepo configuration
+└── pnpm-workspace.yaml    # pnpm workspace config
+```
+
+### Key Design Decisions
+
+- **Subpath Exports**: Import from `@ismail-kattakath/mediapipe-react/genai` to avoid bundling unused code
+- **SSR Safety**: All hooks include `isBrowser()` guards for Next.js compatibility
+- **Web Workers**: Heavy inference tasks run in background threads to keep the UI responsive
+- **TypeScript-first**: Full type safety across all APIs
 
 ## Installation
 
+For **library users**, see the [Core Package README](packages/core/README.md) for detailed usage instructions.
+
 ```bash
 pnpm add @ismail-kattakath/mediapipe-react
-# or
-npm install @ismail-kattakath/mediapipe-react
 ```
-
-> [!NOTE]
-> You may also need to install specific MediaPipe task packages (e.g., `@mediapipe/tasks-genai`) depending on the features you use.
-
-## Quick Start
-
-We support both raw React (Vite/CRA) and Next.js (App Router).
-
-<table width="100%">
-<tr>
-<td width="50%" valign="top">
-
-### ⚡ Vite / Vanilla React
-
-```tsx
-// main.tsx
-import { MediaPipeProvider } from "@ismail-kattakath/mediapipe-react";
-
-ReactDOM.createRoot(root).render(
-  <MediaPipeProvider>
-    <App />
-  </MediaPipeProvider>,
-);
-
-// App.tsx
-import { useLlm } from "@ismail-kattakath/mediapipe-react/genai";
-
-function App() {
-  const { generate, output } = useLlm({
-    modelPath: "/path/to/model.bin",
-  });
-  // ...
-}
-```
-
-</td>
-<td width="50%" valign="top">
-
-### 🌑 Next.js (App Router)
-
-```tsx
-// layout.tsx
-import { MediaPipeProvider } from "@ismail-kattakath/mediapipe-react";
-
-export default function Layout({ children }) {
-  return (
-    <html>
-      <body>
-        <MediaPipeProvider>{children}</MediaPipeProvider>
-      </body>
-    </html>
-  );
-}
-
-// client-component.tsx
-("use client");
-import { useLlm } from "@ismail-kattakath/mediapipe-react/genai";
-// ...
-```
-
-</td>
-</tr>
-</table>
-
-## Subpaths
-
-This library uses subpaths to keep your bundle small:
-
-- `@ismail-kattakath/mediapipe-react`: Core provider and utilities.
-- `@ismail-kattakath/mediapipe-react/genai`: LLM inference and Generative AI features.
 
 ## Roadmap
 
 We are following a phased rollout to cover the full breadth of MediaPipe's capabilities while maintaining a React-idiomatic developer experience.
 
-### Phase 1: Generative AI (Current)
+### Phase 1: Generative AI ✅
 
-- [x] **LLM Inference**: Support for Gemma and Llama models.
-- [x] **Web Worker Orchestration**: Offload heavy inference to background threads.
-- [x] **Streaming Hooks**: Real-time token streaming for chat interfaces.
+- [x] **LLM Inference**: Support for Gemma and Llama models
+- [x] **Web Worker Orchestration**: Offload heavy inference to background threads
+- [x] **Streaming Hooks**: Real-time token streaming for chat interfaces
 - **Hooks**: `useLlm`, `useLlmChat`
 
 ### Phase 2: Vision Core (Next)
 
-- [ ] **Hand Tracking**: 2D and 3D hand landmark detection.
-- [ ] **Face Mesh**: High-fidelity face landmark detection.
-- [ ] **Object Detection**: Identifying and locating multiple objects in images/video.
+- [ ] **Hand Tracking**: 2D and 3D hand landmark detection
+- [ ] **Face Mesh**: High-fidelity face landmark detection
+- [ ] **Object Detection**: Identifying and locating multiple objects in images/video
 - **Hooks**: `useHandTracking`, `useFaceMesh`, `useObjectDetection`
 
 ### Phase 3: Advanced Perception
 
-- [ ] **Holistic Tracking**: Simultaneous tracking of body, hands, and face.
-- [ ] **Selfie Segmentation**: Real-time background removal/blurring.
-- [ ] **Pose Tracking**: 3D body pose estimation.
+- [ ] **Holistic Tracking**: Simultaneous tracking of body, hands, and face
+- [ ] **Selfie Segmentation**: Real-time background removal/blurring
+- [ ] **Pose Tracking**: 3D body pose estimation
 - **Hooks**: `useHolistic`, `useSelfieSegmentation`, `usePoseTracking`
 
 ### Phase 4: Audio & Customization
 
-- [ ] **Audio Classification**: Identify sounds from a predefined set of categories.
-- [ ] **Custom Model Assets**: Support for uploading and using custom `.tflite` or GenAI model files.
+- [ ] **Audio Classification**: Identify sounds from a predefined set of categories
+- [ ] **Custom Model Assets**: Support for uploading and using custom `.tflite` or GenAI model files
 - **Hooks**: `useAudioClassifier`, `useCustomModel`
-
-## 🤝 Call for Contributors
-
-We are looking for help! Specifically, we want to expand the **Vision** capabilities.
-
-If you are interested in implementing the `vision.ts` subpath using our established Web Worker pattern (see [genai.ts](packages/core/src/genai.ts) for reference), please check out our [CONTRIBUTING.md](CONTRIBUTING.md).
-
-Help us make MediaPipe the standard for AI in React!
 
 ## Contributing
 
-Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get involved.
+We welcome contributions! This project is designed to be contributor-friendly.
 
-## Social Sharing
+### Getting Started
 
-When sharing the repository on social media, you can use the following meta tags to ensure a great preview. Add these to your site's `<head>`:
+1. **Clone the repository**:
 
-```html
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content="website" />
-<meta
-  property="og:url"
-  content="https://github.com/ismail-kattakath/mediapipe-react"
-/>
-<meta property="og:title" content="@ismail-kattakath/mediapipe-react" />
-<meta
-  property="og:description"
-  content="The easiest way to integrate MediaPipe into your React and Next.js applications."
-/>
-<meta
-  property="og:image"
-  content="https://opengraph.githubassets.com/1/ismail-kattakath/mediapipe-react"
-/>
+   ```bash
+   git clone https://github.com/ismail-kattakath/mediapipe-react.git
+   cd mediapipe-react
+   ```
 
-<!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image" />
-<meta
-  property="twitter:url"
-  content="https://github.com/ismail-kattakath/mediapipe-react"
-/>
-<meta property="twitter:title" content="@ismail-kattakath/mediapipe-react" />
-<meta
-  property="twitter:description"
-  content="The easiest way to integrate MediaPipe into your React and Next.js applications."
-/>
-<meta
-  property="twitter:image"
-  content="https://opengraph.githubassets.com/1/ismail-kattakath/mediapipe-react"
-/>
-```
+2. **Install dependencies**:
+
+   ```bash
+   pnpm install
+   ```
+
+3. **Run the development playgrounds**:
+
+   ```bash
+   pnpm dev
+   ```
+
+   This starts both the Next.js playground (port 3000) and Vite playground (port 5173).
+
+4. **Make changes** to `packages/core/src/`
+
+5. **Run tests**:
+
+   ```bash
+   pnpm test
+   ```
+
+6. **Create a changeset** (if your changes affect the public API):
+   ```bash
+   pnpm changeset
+   ```
+
+### Development Workflow
+
+- **Turborepo** automatically rebuilds `packages/core` when you edit files
+- **Lint-staged** runs on pre-commit to enforce code quality
+- **Changesets** manages versioning and changelog generation
+- **GitHub Actions** runs CI on every PR (lint, build, test)
+
+For detailed contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+### 🤝 Call for Contributors
+
+We are actively looking for help with **Vision** capabilities!
+
+If you're interested in implementing the `vision.ts` subpath using our established Web Worker pattern (see [genai.ts](packages/core/src/genai.ts) as a reference), we'd love to collaborate with you.
+
+**Help us make MediaPipe the standard for AI in React!**
+
+## Resources
+
+- **[Core Package Documentation](packages/core/README.md)** — API reference and usage examples
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — How to add new MediaPipe tasks
+- **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** — Community guidelines
+- **[Playground-Next README](apps/playground-next/README.md)** — Local development setup
 
 ## License
 
