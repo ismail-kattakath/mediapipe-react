@@ -1,0 +1,14 @@
+# Whitelist approach: ignore everything, then include specific files
+*
+
+# Include dist
+!dist/
+!dist/**
+
+# Include essential files
+!package.json
+!README.md
+!LICENSE
+
+# Ignore source maps and logs in dist if any (optional but good practice)
+dist/**/*.map

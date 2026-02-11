@@ -1,0 +1,38 @@
+# node_modules
+node_modules/
+.pnpm-debug.log*
+
+# Build Artifacts
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Turborepo
+.turbo/
+
+# Environment/Secrets
+.env*
+*.local
+.vercel/
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+
+# OS/IDE Clutter
+.DS_Store
+.vscode/
+.idea/
+
+# Large Assets / MediaPipe Models
+apps/**/*.task
+apps/**/*.bin
+# Specifically for downloaded models in apps
+**/public/models/*.task
+**/public/models/*.bin
+
+# Logs
+*.log
