@@ -1,5 +1,11 @@
 # @ismail-kattakath/mediapipe-react
 
+## 0.1.3
+
+### Patch Changes
+
+- 36cf925: ci: test release workflow again
+
 ## 0.1.2
 
 ### Patch Changes
