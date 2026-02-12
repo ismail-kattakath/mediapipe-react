@@ -14,7 +14,7 @@ class MockWorker {
         if (this.onmessage) {
           this.onmessage({ data: { type: "INIT_COMPLETE" } });
         }
-      }, 0);
+      }, 50);
     }
     if (data.type === "DETECT") {
       // Simulate detection results
@@ -27,7 +27,7 @@ class MockWorker {
             },
           });
         }
-      }, 0);
+      }, 50);
     }
   });
   terminate = vi.fn();
@@ -51,20 +51,19 @@ describe("useFaceLandmarker", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(true));
     expect(result.current.results).toBeNull();
 
-    // Wait for initialization
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 10));
+    // Wait for initialization to complete
+    await waitFor(() => expect(result.current.isLoading).toBe(false), {
+      timeout: 1000,
     });
-
-    expect(result.current.isLoading).toBe(false);
   });
 
   it("should return results when detect is called", async () => {
     const { result } = renderHook(() => useFaceLandmarker(), { wrapper });
 
-    // Wait for initialization
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 10));
+    // Wait for initialization to start and complete
+    await waitFor(() => expect(result.current.isLoading).toBe(true));
+    await waitFor(() => expect(result.current.isLoading).toBe(false), {
+      timeout: 1000,
     });
 
     const mockVideo = document.createElement("video");
@@ -74,8 +73,8 @@ describe("useFaceLandmarker", () => {
     });
 
     // Wait for results
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 10));
+    await waitFor(() => expect(result.current.results).not.toBeNull(), {
+      timeout: 1000,
     });
 
     expect(result.current.results).toBeDefined();
@@ -103,11 +102,9 @@ describe("useFaceLandmarker", () => {
 
     const { result } = renderHook(() => useFaceLandmarker(), { wrapper });
 
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 50));
+    await waitFor(() => expect(result.current.error).toBe("Failed to init"), {
+      timeout: 1000,
     });
-
-    expect(result.current.error).toBe("Failed to init");
     expect(result.current.isLoading).toBe(false);
 
     global.Worker = originalWorker;
