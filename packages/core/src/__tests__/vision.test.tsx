@@ -1,4 +1,4 @@
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useFaceLandmarker } from "../vision";
 import { MediaPipeProvider } from "../index";
@@ -48,7 +48,7 @@ describe("useFaceLandmarker", () => {
   it("should initialize and load successfully", async () => {
     const { result } = renderHook(() => useFaceLandmarker(), { wrapper });
 
-    expect(result.current.isLoading).toBe(true);
+    await waitFor(() => expect(result.current.isLoading).toBe(true));
     expect(result.current.results).toBeNull();
 
     // Wait for initialization
@@ -79,8 +79,9 @@ describe("useFaceLandmarker", () => {
     });
 
     expect(result.current.results).toBeDefined();
-    expect(result.current.results.faceLandmarks).toHaveLength(1);
-    expect(result.current.results.faceLandmarks[0][0].x).toBe(0.5);
+    const results = result.current.results as any;
+    expect(results.faceLandmarks).toHaveLength(1);
+    expect(results.faceLandmarks[0][0].x).toBe(0.5);
   });
 
   it("should handle initialization errors", async () => {
