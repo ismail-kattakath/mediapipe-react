@@ -36,3 +36,4 @@ apps/**/*.bin
 
 # Logs
 *.log
+*.txt
