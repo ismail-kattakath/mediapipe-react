@@ -1,6 +1,6 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useFaceLandmarker } from "../vision";
+import { useFaceLandmarker, drawLandmarks } from "../vision";
 import { MediaPipeProvider } from "../index";
 import React from "react";
 
@@ -35,6 +35,16 @@ class MockWorker {
 
 global.Worker = MockWorker as any;
 global.createImageBitmap = vi.fn().mockResolvedValue({});
+global.ImageData = class ImageData {
+  data: Uint8ClampedArray;
+  width: number;
+  height: number;
+  constructor(width: number, height: number) {
+    this.width = width;
+    this.height = height;
+    this.data = new Uint8ClampedArray(width * height * 4);
+  }
+} as any;
 
 describe("useFaceLandmarker", () => {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -108,5 +118,62 @@ describe("useFaceLandmarker", () => {
     expect(result.current.isLoading).toBe(false);
 
     global.Worker = originalWorker;
+  });
+
+  it("should handle ImageData input in detect", async () => {
+    const { result } = renderHook(() => useFaceLandmarker(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    const mockImageData = new ImageData(100, 100);
+
+    await act(async () => {
+      result.current.detect(mockImageData, 1234);
+    });
+
+    await waitFor(() => expect(result.current.results).not.toBeNull());
+  });
+
+  describe("drawLandmarks", () => {
+    it("should draw landmarks on canvas", () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 100;
+      canvas.height = 100;
+      const getContext = vi.spyOn(canvas, "getContext");
+      const mockCtx = {
+        save: vi.fn(),
+        restore: vi.fn(),
+        beginPath: vi.fn(),
+        arc: vi.fn(),
+        fill: vi.fn(),
+        strokeStyle: "",
+        lineWidth: 0,
+      };
+      getContext.mockReturnValue(mockCtx as any);
+
+      const results = {
+        faceLandmarks: [[{ x: 0.1, y: 0.2, z: 0 }]],
+      };
+
+      drawLandmarks(canvas, results);
+
+      expect(mockCtx.save).toHaveBeenCalled();
+      expect(mockCtx.beginPath).toHaveBeenCalled();
+      expect(mockCtx.arc).toHaveBeenCalledWith(10, 20, 1, 0, 2 * Math.PI);
+      expect(mockCtx.fill).toHaveBeenCalled();
+      expect(mockCtx.restore).toHaveBeenCalled();
+    });
+
+    it("should return early if results are invalid", () => {
+      const canvas = document.createElement("canvas");
+      const getContext = vi.spyOn(canvas, "getContext");
+      const mockCtx = { save: vi.fn() };
+      getContext.mockReturnValue(mockCtx as any);
+
+      drawLandmarks(canvas, null);
+      expect(mockCtx.save).not.toHaveBeenCalled();
+
+      drawLandmarks(canvas, {});
+      expect(mockCtx.save).not.toHaveBeenCalled();
+    });
   });
 });
